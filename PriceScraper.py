@@ -53,13 +53,12 @@ with open('PDFs/currentPDF.pdf', "wb") as file:
 
 tables = camelot.read_pdf('PDFs/currentPDF.pdf', pages="all")
 #tables.export("test.csv", f='csv')
-
-
 sheet = spreadsheet.get_sheet('LidlPriceTracking.json','sheetID.txt')
 
 
 sheet_data = sheet.get_all_values()
 sheet_product_col = sheet.col_values(1)     #extract first column - product names
+sheet_quantity_col = sheet.col_values(2)    #extract second column - quantity - used for products that share the same name
 sheet_date_row = sheet.row_values(1)
 
 rows_populated = len(sheet_product_col)
@@ -80,18 +79,24 @@ prices_list = sheet.range(get_column_range(rows_populated, cols_populated))
 
 for sublist in tables:
     for product in sublist.data:
-        if sheet_product_col.count(product[0]) > 0:
-            prices_list[sheet_product_col.index(product[0])].value = product[3]
-        else:
-            formatted_list = []
-            formatted_list.append(product[0])
-            formatted_list.append(product[1])
-            formatted_list.append(product[2])
-            for _ in range(cols_populated - 4):
-                formatted_list.append("-")
-            formatted_list.append(product[3])
-            print(formatted_list)
-            to_append_list.append(formatted_list)
+        if(product[0] != ''):
+            if sheet_product_col.count(product[0]) == 1:
+                prices_list[sheet_product_col.index(product[0])].value = product[3]
+            elif sheet_product_col.count(product[0]) > 1:
+                same_product_list = [[product_name, quantity, index] for index, (product_name, quantity) in enumerate(zip(sheet_product_col, sheet_quantity_col)) if product_name == product[0]]
+                for item in same_product_list:
+                    if item[1] == product[1]:
+                        prices_list[item[2]].value = product[3]
+            else:
+                formatted_list = []
+                formatted_list.append(product[0])
+                formatted_list.append(product[1])
+                formatted_list.append(product[2])
+                for _ in range(cols_populated - 4):
+                    formatted_list.append("-")
+                formatted_list.append(product[3])
+                print(formatted_list)
+                to_append_list.append(formatted_list)
 print(prices_list)
 
 
