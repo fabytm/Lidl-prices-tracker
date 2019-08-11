@@ -58,7 +58,7 @@ if not os.path.exists("PDF"):
 with open('PDF/currentPDF.pdf', "wb") as file:
     file.write(pdf.content)
 
-tables = camelot.read_pdf('PDF/currentPDF.pdf', pages="all")
+tables = camelot.read_pdf('PDF/currentPDF.pdf', pages="all", flavor='stream')
 # tables.export("test.csv", f='csv')
 sheet = spreadsheet.get_sheet('LidlPriceTracking.json','sheetID.txt')
 
@@ -104,7 +104,6 @@ for sublist in tables:
                 formatted_list.append(product[3])
                 print(formatted_list)
                 to_append_list.append(formatted_list)
-print(prices_list)
 
 
 sheet.append_rows(to_append_list)
